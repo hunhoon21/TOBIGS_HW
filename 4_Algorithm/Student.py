@@ -7,8 +7,14 @@ class Student:
         return "{}번 {}".format(self.id, self.name)
 
     def __lt__(self, other):
-        return self.id < other.id
+        if isinstance(other, Student):
+            return self.id < other.id
+        else:
+            return self.id < other
 
 
     def __eq__(self, other):
-        return self.id == other.id
+        if isinstance(other, Student):
+            return self.id == other.id
+        else:
+            return self.id == other

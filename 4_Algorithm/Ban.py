@@ -7,11 +7,17 @@ class Ban:
         return "<{}반> {}명".format(self.no, self.count_student())
 
     def __lt__(self, other):
-        return self.no < other.no
+        if isinstance(other, Ban):
+            return self.no < other.no
+        else:
+            return self.no < other
 
     def __eq__(self, other):
-        return self.no == other.no
-
+        if isinstance(other, Ban):
+            return self.no == other.no
+        else:
+            return self.no == other
+        
     def count_student(self):
         """
         해당 반에 속에있는 학생들 수

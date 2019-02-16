@@ -15,13 +15,12 @@ with open('4_Algorithm.txt', 'r', encoding='utf-8') as f:
         id = int(info[2][0])
 
         student = Student(id, name)
-        temp_ban = Ban(no)
-        #Ban_list[no - 1].student_list.append(student)
-        if temp_ban not in Ban_list:
-            Ban_list.append(Ban(no))
 
+        #Ban_list[no - 1].student_list.append(student)
+        if no not in Ban_list:
+            Ban_list.append(Ban(no))
         for ban in Ban_list:
-            if temp_ban == ban:
+            if no == ban.no:
                 ban.student_list.append(student)
 
 # 1반, 2반, 3반, ... 순서대로 정렬 for __lt__, __eq__
