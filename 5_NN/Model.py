@@ -51,10 +51,8 @@ class TwoLayerNet():
         a = np.maximum(h, 0)
         scores = np.dot(a, W2) + b2
 
-        o = np.exp(scores - np.max(scores, axis=1).reshape(-1, 1))  # stable exponential for scores
-        p = o / np.sum(o, axis=1).reshape(-1, 1)
-
-        #p = None
+        o = np.exp(scores - np.max(scores, axis=1, keepdims=True))  # stable exponential for scores
+        p = o / np.sum(o, axis=1, keepdims=True)
 
         if y is None:
             return p, a
@@ -64,7 +62,7 @@ class TwoLayerNet():
         Loss = None
 
         LL = -np.log(p[np.arange(N), y])  # get LogLikelihood
-        Loss = np.sum(LL) / N  # get p loss
+        Loss = np.mean(LL)  # get p loss
 
         return Loss
 
@@ -90,11 +88,6 @@ class TwoLayerNet():
         p, a = self.forward(X)
 
         # 여기에 각 파라미터에 대한 미분 값을 저장하세요.
-
-        grads["W2"] = None
-        grads["b2"] = None
-        grads["W1"] = None
-        grads["b1"] = None
 
         dp = np.array(p)
         dp[np.arange(N), y] -= 1  # p-y
