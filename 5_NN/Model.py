@@ -22,12 +22,11 @@ class TwoLayerNet():
 
          """
 
-        # 여기에 가중치들을 init 하세요
          self.params = {}
-         self.params["W1"] = std * None
-         self.params["b1"] = None
-         self.params["W2"] = std * None
-         self.params["b2"] = None
+         self.params["W1"] = std * np.random.randn(input_size, hidden_size)
+         self.params["b1"] = np.zeros(hidden_size)
+         self.params["W2"] = std * np.random.randn(hidden_size, output_size)
+         self.params["b2"] = np.zeros(output_size)
 
     def forward(self, X, y=None):
         """
@@ -37,9 +36,7 @@ class TwoLayerNet():
 
         Linear - ReLU - Linear - Softmax - CrossEntropy Loss
 
-        이 코드에서는,
-        y가 주어지지 않으면 Softmax 결과 p와 Activation 결과 a를 return합니다.
-        그 이유는 p와 a 모두 backward에서 미분할때 사용하기 때문입니다.
+        y가 주어지지 않으면 Softmax 결과 p와 Activation 결과 a를 return합니다. p와 a 모두 backward에서 미분할때 사용합니다.
         y가 주어지면 CrossEntropy Error를 return합니다.
 
         """
@@ -48,19 +45,26 @@ class TwoLayerNet():
         W2, b2 = self.params["W2"], self.params["b2"]
         N, D = X.shape
 
-        # 여기서 p를 구하는 작업을 수행하세요.
+        # 여기에 p를 구하는 작업을 수행하세요.
 
-        h = None
-        a = None
-        scores = None
-        p = None
+        h = np.dot(X, W1) + b1
+        a = np.maximum(h, 0)
+        scores = np.dot(a, W2) + b2
+
+        o = np.exp(scores - np.max(scores, axis=1).reshape(-1, 1))  # stable exponential for scores
+        p = o / np.sum(o, axis=1).reshape(-1, 1)
+
+        #p = None
 
         if y is None:
             return p, a
 
-        # 여기서 Loss를 구하는 작업을 수행하세요.
+        # 여기에 Loss를 구하는 작업을 수행하세요.
 
         Loss = None
+
+        LL = -np.log(p[np.arange(N), y])  # get LogLikelihood
+        Loss = np.sum(LL) / N  # get p loss
 
         return Loss
 
@@ -83,18 +87,24 @@ class TwoLayerNet():
         N = X.shape[0] # 데이터 개수
         grads = {}
 
-        #p, a는 forward 결과를 가져옵니다.
         p, a = self.forward(X)
 
         # 여기에 각 파라미터에 대한 미분 값을 저장하세요.
-
-        dp = None
-        da = None
 
         grads["W2"] = None
         grads["b2"] = None
         grads["W1"] = None
         grads["b1"] = None
+
+        dp = np.array(p)
+        dp[np.arange(N), y] -= 1  # p-y
+
+        da = np.dot(dp, W2.T) * (a > 0)
+
+        grads["W2"] = 1 / N * np.dot(a.T, dp)
+        grads["b2"] = np.mean(dp, axis=0)
+        grads["W1"] = 1 / N * np.dot(X.T, da)
+        grads["b1"] = np.mean(da, axis=0)
 
         self.params["W2"] -= learning_rate * grads["W2"]
         self.params["b2"] -= learning_rate * grads["b2"]
@@ -102,8 +112,8 @@ class TwoLayerNet():
         self.params["b1"] -= learning_rate * grads["b1"]
 
     def accuracy(self, X, y):
-        N = X.shape[0]
-        p, _ = self.forward(X)
-        y_pred = None
 
-        return np.sum(y_pred==y)/N
+        p, _ = self.forward(X)
+        y_pred = np.argmax(p, axis=1)
+
+        return np.sum(y_pred==y)/len(X)
